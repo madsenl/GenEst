@@ -2,8 +2,15 @@
 # matrices Xp and Xk and search data in Data. Expecting Data to have column
 # names s1, s2, etc.
 
-pkEst <- function(Xp,Xk,Data) {
-
+pkEst <- function(fp,fk,dat) {
+  
+  Xp <- model.matrix(fp,dat)
+  Xk <- model.matrix(fk,dat)
+  
+  scols <- grep("s\\d{1}",names(dat),
+                ignore.case=TRUE) # Identify columns containing search outcome data
+  Data <- dat[,scols]
+  
   # Create the zeros array. It has the same dimensions as Data, but has a 1
   # wherever Data has a 0 and NAs elsewhere. nLL() takes it as input.
   zeros <- as.matrix(Data)
