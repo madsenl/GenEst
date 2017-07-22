@@ -4,7 +4,7 @@
 # the (at most) two categorical covariates as well as the search results
 # columns s1,...,s<whatever>. This version doesn't mind the -999s.
 
-pkEst1 <- function(fp,fk,dat) {
+pkEst1 <- function(fp,fk,dat,getHess=FALSE) {
     
   Xp <- model.matrix(fp,dat)
   Xk <- model.matrix(fk,dat)
@@ -67,16 +67,35 @@ pkEst1 <- function(fp,fk,dat) {
     pfind.si <- pk[, 1] * powk *
       cbind(rep(1, nfact), matrixStats::rowCumprods(1 - (pk[,1] * powk[, 1:maxmiss])))
     -(sum(log(pmiss[cbind(pkind[found == 0], zeros[found == 0])]))+sum(log(pfind.si[cbind(pkind[found > 0], found[found > 0])])))
-  }, method = "BFGS",hessian=TRUE)
+  }, method = "BFGS",hessian=FALSE)
 
   # Extract the parameters estimates for the p and k models.
   betaphat <- result$par[1:NCOL(Xp)]
   betakhat <- result$par[(NCOL(Xp)+1):length(theta)]
   
+  if (!getHess) {
+    hessian <- NULL
+  } else {
+  hessian <- optimHess(par=result$par,
+            fn = function(theta){
+              Beta <- array(numeric(length(theta) * 2), dim = c(length(theta), 2))
+              Beta[1:np,1] <- theta[1:np]
+              Beta[(np+1):length(theta), 2]<-theta[(np+1):length(theta)]
+              pk <- alogit(facts %*% Beta)
+              powk<-array(rep(pk[, 2], maxmiss + 1), dim=c(dim(pk)[1], maxmiss+1))
+              powk[,1] <- 1
+              powk <- matrixStats::rowCumprods(powk)
+              pmiss <- matrixStats::rowCumprods(1 - (pk[,1] * powk[, 1:maxmiss]))
+              pfind.si <- pk[, 1] * powk *
+                cbind(rep(1, nfact), matrixStats::rowCumprods(1 - (pk[,1] * powk[, 1:maxmiss])))
+              -(sum(log(pmiss[cbind(pkind[found == 0], zeros[found == 0])]))+sum(log(pfind.si[cbind(pkind[found > 0], found[found > 0])])))})
+  }
+  
   return(list(betaphat=betaphat,
                betakhat=betakhat,
                aic=2*result$value + 2*length(result$par),
-               convergence=result$convergence))
+               convergence=result$convergence,
+               hessian=hessian))
 }
 
 # Utility functions for logit and its inverse:
