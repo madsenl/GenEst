@@ -1,9 +1,10 @@
 # Function to simulate nsims realizations of a vector of dependent ghats
 # with beta(a,b) marginals. Beta parameters a and b should have one element
-# for each class. Returns g_hat which is nsims by length(a).
-ghatSim <- function(nsims,a,b,rho) {
+# for each class. grho is rank correlation between pairs of ghats.
+# Returns g_hat which is nsims by length(a).
+ghatSim <- function(nsims,a,b,grho) {
   nclasses <- length(a)
-  Rho <- matrix(rho,nclasses,nclasses)
+  Rho <- matrix(grho,nclasses,nclasses)
   diag(Rho) <- 1
   sqrtRho <- NA
   try(sqrtRho <- chol(Rho), TRUE)
