@@ -40,7 +40,7 @@ simCP <- function(nsims,survOut,egDat) {
                    exponential=matrix(1,nrow=nsims,ncol=NROW(Xcp)),
                    weibull=matrix(1/exp(thetaSim[,NCOL(thetaSim)]),nrow=nsims,ncol=NROW(Xcp)),
                    loglogistic=matrix(1/exp(thetaSim[,NCOL(thetaSim)]),nrow=nsims,ncol=NROW(Xcp)),
-                   lognormal=matrix(1/thetaSim[,NCOL(thetaSim)]^2,nrow=nsims,ncol=NROW(Xcp)))
+                   lognormal=matrix(thetaSim[,NCOL(thetaSim)]^2,nrow=nsims,ncol=NROW(Xcp)))
   pdbSim <- switch(survOut$dist, 
                    exponential=exp(thetaSim[,1:NCOL(Xcp)]%*%t(Xcp)),
                    weibull=exp(thetaSim[,1:NCOL(Xcp)]%*%t(Xcp)),
